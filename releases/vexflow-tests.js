@@ -1,5 +1,5 @@
 /**!
- * VexFlow 1.2.93 built on 2020-04-02.
+ * VexFlow 1.2.94 built on 2020-04-10.
  * Copyright (c) 2010 Mohit Muthanna Cheppudira <mohit@muthanna.com>
  *
  * http://www.vexflow.com  http://github.com/0xfe/vexflow
@@ -203,9 +203,17 @@ VF.Test = (function () {
     runSVGTest: function (name, func, params) {
       if (!VF.Test.RUN_SVG_TESTS) return;
 
-      QUnit.test(name, function (assert) {
-        var elementId = VF.Test.genID('svg_');
-        var title = VF.Test.genTitle('SVG', assert, name);
+      const fontStacks = {
+        Bravura: [VF.Fonts.Bravura, VF.Fonts.Gonville, VF.Fonts.Custom],
+        Gonville: [VF.Fonts.Gonville, VF.Fonts.Bravura, VF.Fonts.Custom],
+        Petaluma: [VF.Fonts.Petaluma, VF.Fonts.Gonville, VF.Fonts.Custom],
+      }
+
+      const testFunc = (fontName) => (assert) => {
+        const defaultFontStack = VF.DEFAULT_FONT_STACK;
+        VF.DEFAULT_FONT_STACK = fontStacks[fontName];
+        var elementId = VF.Test.genID('svg_'+fontName);
+        var title = VF.Test.genTitle('SVG '+fontName, assert, name);
 
         VF.Test.createTestSVG(elementId, title);
 
@@ -217,7 +225,12 @@ VF.Test = (function () {
         };
 
         func(testOptions, VF.Renderer.getSVGContext);
-      });
+        VF.DEFAULT_FONT_STACK = defaultFontStack;
+      }
+
+      QUnit.test(name, testFunc('Bravura'));
+      QUnit.test(name, testFunc('Gonville'));
+      QUnit.test(name, testFunc('Petaluma'));
     },
 
     runNodeTest: function (name, func, params) {
@@ -1544,7 +1557,7 @@ VF.Test.Articulation = (function() {
 
       var notesBar3 = [
         new VF.StaveNote({ keys: ['c/4'], duration: 'q', stem_direction: 1 }),
-        new VF.StaveNote({ keys: ['a/4'], duration: 'q', stem_direction: 1 }),
+        new VF.StaveNote({ keys: ['c/5'], duration: 'q', stem_direction: 1 }),
         new VF.StaveNote({ keys: ['c/4'], duration: 'q', stem_direction: 1 }),
         new VF.StaveNote({ keys: ['a/4'], duration: 'q', stem_direction: 1 }),
       ];
@@ -1561,7 +1574,7 @@ VF.Test.Articulation = (function() {
       staveBar4.setContext(ctx).draw();
 
       var notesBar4 = [
-        new VF.StaveNote({ keys: ['c/5'], duration: 'q', stem_direction: -1 }),
+        new VF.StaveNote({ keys: ['a/4'], duration: 'q', stem_direction: -1 }),
         new VF.StaveNote({ keys: ['a/5'], duration: 'q', stem_direction: -1 }),
         new VF.StaveNote({ keys: ['c/5'], duration: 'q', stem_direction: -1 }),
         new VF.StaveNote({ keys: ['a/5'], duration: 'q', stem_direction: -1 }),
@@ -1625,10 +1638,10 @@ VF.Test.Articulation = (function() {
       expect(0);
 
       // Get the rendering context
-      var ctx = contextBuilder(options.elementId, 725, 200);
+      var ctx = contextBuilder(options.elementId, 1000, 200);
 
       // bar 1
-      var staveBar1 = new VF.Stave(10, 30, 250);
+      var staveBar1 = new VF.Stave(10, 30, 350);
       staveBar1.setContext(ctx).draw();
       var notesBar1 = [
         new VF.StaveNote({ keys: ['c/4'], duration: '16', stem_direction: 1 }),
@@ -1667,7 +1680,7 @@ VF.Test.Articulation = (function() {
       beam2.setContext(ctx).draw();
 
       // bar 2 - juxtaposing second bar next to first bar
-      var staveBar2 = new VF.Stave(staveBar1.width + staveBar1.x, staveBar1.y, 250);
+      var staveBar2 = new VF.Stave(staveBar1.width + staveBar1.x, staveBar1.y, 350);
       staveBar2.setContext(ctx).draw();
       var notesBar2 = [
         new VF.StaveNote({ keys: ['f/3'], duration: '16', stem_direction: 1 }),
@@ -1718,7 +1731,7 @@ VF.Test.Articulation = (function() {
       // Helper function to justify and draw a 4/4 voice
       VF.Formatter.FormatAndDraw(ctx, staveBar3, notesBar3);
       // bar 4 - juxtaposing second bar next to first bar
-      var staveBar4 = new VF.Stave(staveBar3.width + staveBar3.x, staveBar3.y, 125);
+      var staveBar4 = new VF.Stave(staveBar3.width + staveBar3.x, staveBar3.y, 150);
       staveBar4.setEndBarType(VF.Barline.type.END);
       staveBar4.setContext(ctx).draw();
 
@@ -2815,7 +2828,7 @@ VF.Test.BachDemo = (function() {
       system.addStave({
         voices: [
           voice([
-            notes('B5/q'),
+            notes('B4/q'),
             beam(notes('C5/8, B4, A4, G4[id="m6a"]', { stem: 'up' })),
           ].reduce(concat)),
         ],
@@ -8209,8 +8222,8 @@ VF.Test.Percussion = (function() {
         var voice0 = vf.Voice().addTickables([
           vf.StaveNote({ keys: ['a/5/x3'], duration: '8' }),
           vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
-          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
-          vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/5'], duration: '8' }),
+          vf.StaveNote({ keys: ['g/4/n', 'g/5/x2'], duration: '8' }),
           vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
           vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
           vf.StaveNote({ keys: ['g/5/x2'], duration: '8' }),
@@ -10893,13 +10906,13 @@ VF.Test.StaveNote = (function() {
       var stave = new VF.Stave(10, 10, 400);
       var note = new VF.StaveNote({ keys: ['c/4', 'e/4', 'a/4'], duration: 'w' }).setStave(stave);
 
-      var tickContext = new VF.TickContext()
+      new VF.TickContext()
         .addTickable(note)
         .preFormat()
         .setX(10)
         .setPadding(0);
 
-      VF.Test.almostEqual(tickContext.getWidth(), 17.3815, 0.0001);
+      expect(0);
     },
 
     showNote: function(note_struct, stave, ctx, x, drawBoundingBox) {
@@ -11140,8 +11153,8 @@ VF.Test.StaveNote = (function() {
     },
 
     drawHarmonicAndMuted: function(options, contextBuilder) {
-      var ctx = new contextBuilder(options.elementId, 300, 180);
-      var stave = new VF.Stave(10, 10, 280);
+      var ctx = new contextBuilder(options.elementId, 1000, 180);
+      var stave = new VF.Stave(10, 10, 950);
       stave.setContext(ctx);
       stave.draw();
 
@@ -11189,7 +11202,7 @@ VF.Test.StaveNote = (function() {
 
       for (var i = 0; i < notes.length; ++i) {
         var note = notes[i];
-        var staveNote = showNote(note, stave, ctx, (i + 1) * 25);
+        var staveNote = showNote(note, stave, ctx, (i * 25) + 5);
 
         ok(staveNote.getX() > 0, 'Note ' + i + ' has X value');
         ok(staveNote.getYs().length > 0, 'Note ' + i + ' has Y values');
