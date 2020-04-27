@@ -168,7 +168,7 @@ export class Beam extends Element {
 
     function createGroups() {
       let nextGroup = [];
-
+      let tickrunningtotal = new Fraction(0, 1);//ANDIE
       unprocessedNotes.forEach(unprocessedNote => {
         nextGroup = [];
         if (unprocessedNote.shouldIgnoreTicks()) {
@@ -176,10 +176,9 @@ export class Beam extends Element {
           currentGroup = nextGroup;
           return; // Ignore untickables (like bar notes)
         }
-
         currentGroup.push(unprocessedNote);
         const ticksPerGroup = tickGroups[currentTickGroup].clone();
-        const totalTicks = getTotalTicks(currentGroup);
+        const totalTicks = getTotalTicks(currentGroup).add(tickrunningtotal); //ANDIE
 
         // Double the amount of ticks in a group, if it's an unbeamable tuplet
         const unbeamable = Flow.durationToNumber(unprocessedNote.duration) < 8;
@@ -195,21 +194,26 @@ export class Beam extends Element {
             nextGroup.push(currentGroup.pop());
           }
           noteGroups.push(currentGroup);
+
+          tickrunningtotal = totalTicks.subtract(ticksPerGroup); //ANDIE
+          while (tickrunningtotal.greaterThanEquals(ticksPerGroup)) {
+            tickrunningtotal = tickrunningtotal.subtract(ticksPerGroup);
+          } //ANDIE
           currentGroup = nextGroup;
           nextTickGroup();
         } else if (totalTicks.equals(ticksPerGroup)) {
           noteGroups.push(currentGroup);
+          tickrunningtotal = new Fraction(0, 1); //ANDIE
           currentGroup = nextGroup;
           nextTickGroup();
         }
       });
 
-      // Adds any remainder notes
+      // Adds any remainder notes beam
       if (currentGroup.length > 0) {
         noteGroups.push(currentGroup);
       }
     }
-
     function getBeamGroups() {
       return noteGroups.filter(group => {
         if (group.length > 1) {
