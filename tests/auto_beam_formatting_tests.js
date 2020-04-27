@@ -606,7 +606,7 @@ VF.Test.AutoBeamFormatting = (function() {
       var score = vf.EasyScore();
 
       var voice = score.voice(score.notes(
-        'c4/8, g4/4, c5/8., g5/16, a5/4, a5/16, (c5 e5)/16, a5/8'
+        'c4/8, g4/4, c5/8., g5/16, a5/8, a5/8, a5/16, (c5 e5)/16, a5/8'
       ), { time: '9/8' });
 
       var beams = VF.Beam.applyAndGetBeams(voice, undefined, VF.Beam.getDefaultBeamGroups('9/8'));
